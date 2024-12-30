@@ -6,10 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ProviderTodo extends ChangeNotifier {
   List<ModelTodo> modelTodoList = [];
   List<String> bookMarkList = [];
+  bool isDark = true;
 
   ProviderTodo() {
     apiCalling();
     getShareDetails();
+    getDarkMod();
   }
 
   Future<List> apiCalling() async {
@@ -31,6 +33,8 @@ class ProviderTodo extends ChangeNotifier {
       getShareDetails();
     } else {
       print("Id was already existing");
+      bookMarkList.remove(id);
+      await prefs.setStringList('items', bookMarkList);
       notifyListeners();
     }
   }
@@ -41,5 +45,19 @@ class ProviderTodo extends ChangeNotifier {
     bookMarkList = items;
     print(bookMarkList);
     notifyListeners();
+  }
+
+  Future<void> darkMode()
+  async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    isDark = !isDark;
+    await prefs.setBool('repeat', isDark);
+    notifyListeners();
+  }
+  Future<void> getDarkMod()
+  async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    isDark = prefs.getBool('repeat') ?? true;
+    print(isDark);
   }
 }

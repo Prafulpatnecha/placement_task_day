@@ -28,7 +28,7 @@ class ApiHelperAuth extends ChangeNotifier {
   ApiHelperAuth();
   ApiHelperAuth.oneTimeCalling()
   {
-    // postShareLocalStorageEmail();
+    postShareLocalStorageEmail();
   }
 
 
@@ -58,6 +58,7 @@ class ApiHelperAuth extends ChangeNotifier {
         modelAuth = ModelAuth.fromJson(m1);
         getShareLocalStorageEmail(email: username,password: password);
         print(modelAuth!.id);
+        notifyListeners();
         return "Login Successfully";
       } else if ((m1["message"] ?? m1["username"]) == "Username and password required") {
         //   error Massage Show
@@ -102,19 +103,86 @@ class ApiHelperAuth extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> postShareLocalStorageEmail() async {
+  Future<Object?> postShareLocalStorageEmail() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String value = prefs.getString('email') ?? "";
-    if(value.isNotEmpty)
-      {
-        email = value.split("_").sublist(0,1).join("");
-        password = value.split("_").sublist(1,2).join("");
+    if(value.isNotEmpty) {
+      email = value.split("_").sublist(0, 1).join("");
+      password = value.split("_").sublist(1, 2).join("");
+      print(
+          "******************************************************************");
+      print(email);
+      print(password);
+      print(
+          "******************************************************************");
+      // notifyListeners();
+      Response response = await http.post(
+        Uri.parse(
+          _url,
+        ),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "username": email,
+          "password": password,
+        }),
+      );
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        Map m1 = json;
+        print(
+            "++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
+        print(
+            "++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
+        print(m1["message"] ?? m1["username"]);
+        print(
+            "++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
+        if ((m1["message"] ?? m1["username"]) == email) {
+          // username,password share local Storage
+          print(m1);
+          modelAuth = ModelAuth.fromJson(m1);
+          // getShareLocalStorageEmail(email: email,password: password);
+          print(modelAuth!.id);
+          // notifyListeners();
+          return modelAuth;
+        } else if ((m1["message"] ?? m1["username"]) ==
+            "Username and password required") {
+          //   error Massage Show
+          return "Username and password required";
+        } else if ("Invalid credentials" == (m1["message"] ?? m1["username"])) {
+          //   error Massage Show
+          return "Password Invalid";
+        } else {
+          return "Check Your Internet";
+        }
+      } else {
+        final json = jsonDecode(response.body);
+        Map m1 = json;
+        print(
+            "+++++++++++++++++++++++++++++++++++2+++++++++++++++++++++++++++++");
+        print(m1);
+        print(
+            "++++++++++++++++++++++++++++++++++2++++++++++++++++++++++++++++++");
+        print(m1["message"]);
+        print(
+            "++++++++++++++++++++++++++++++++++++2++++++++++++++++++++++++++++");
+        if ((m1["message"] ?? m1["username"]) == "Invalid credentials") {
+          //   error Massage Show
+          return "Password Invalid";
+        } else if ((m1["message"] ?? m1["username"]) ==
+            "Username and password required") {
+          //   error Massage Show
+          return "Username and password required";
+        } else if ("Invalid credentials" == (m1["message"] ?? m1["username"])) {
+          //   error Massage Show
+          return "Password Invalid";
+        } else {
+          return "Check Your Internet";
+        }
       }
-    print("******************************************************************");
-    print(email);
-    print(password);
-    print("******************************************************************");
-    // notifyListeners();
+    }
+      return "Not ANy";
   }
 
   Future<void> authLogout() async {
@@ -124,6 +192,9 @@ class ApiHelperAuth extends ChangeNotifier {
     password = "";
     notifyListeners();
   }
-
+  void updateChange()
+  {
+    notifyListeners();
+  }
   void jsonFetch() {}
 }

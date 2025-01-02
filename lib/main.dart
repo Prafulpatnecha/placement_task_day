@@ -1,36 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:placement_task_day/provider/provider_todo.dart';
-import 'package:placement_task_day/view/bookmark/bookmark_page.dart';
-import 'package:placement_task_day/view/home/home_page.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-Future<void> main() async {
+import 'file_pub/toast/toast_warpper.dart';
+import 'services/api_helper_auth.dart';
+import 'view/home/home_page_day_2.dart';
+import 'view/login/auth_login_page.dart';
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // ProviderTodo provider = ProviderTodo();
-  // final SharedPreferences prefs = await SharedPreferences.getInstance();
-  // provider.isDark = prefs.getBool('repeat') ?? true;
-  // await provider.getDarkMod();
-  runApp(const MyApp());
+  ApiHelperAuth.oneTimeCalling();
+  runApp(MyDay2());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyDay2 extends StatelessWidget {
+  const MyDay2({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(providers: [
-      ChangeNotifierProvider(create: (context) => ProviderTodo(),),
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => ApiHelperAuth()),
+        ],
+        builder: (context, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: ToastWrapper(child: AuthProcessPage()),
+            // initialRoute: "/login",
+            // routes: {
+            //   "/":(context)=>AuthProcessPage(),
+            //   // "/":(context)=>AuthLoginPage(),
+            //   // "/": (context) => ToastWrapper(child: AuthLoginPage()),
+            //   "/home": (context) => HomePageDay2(),
+            // },
+          );
+        });
+  }
+}
 
-    ],builder: (context, child) => MaterialApp(
-      debugShowCheckedModeBanner: false,
-      darkTheme: ThemeData.dark(),
-      theme: ThemeData.light(),
-      themeMode: Provider.of<ProviderTodo>(context,listen: true).isDark?ThemeMode.light:ThemeMode.dark,
-      routes: {
-        "/":(context)=>HomePage(),
-        "/book":(context)=>BookmarkPage(),
-      },
-    ),);
+
+
+class AuthProcessPage extends StatefulWidget {
+  const AuthProcessPage({super.key});
+
+  @override
+  State<AuthProcessPage> createState() => _AuthProcessPageState();
+}
+
+class _AuthProcessPageState extends State<AuthProcessPage> {
+  @override
+  Widget build(BuildContext context) {
+    // ApiHelperAuth.oneTimeCalling();
+    ApiHelperAuth apiHelperAuthTrue = Provider.of(context,listen: true);
+    print("=============================================");
+    print("${apiHelperAuthTrue.email}<--------------------");
+    print("=============================================");
+    ApiHelperAuth apiHelperAuthFalse = Provider.of(context,listen: false);
+    apiHelperAuthFalse.postShareLocalStorageEmail();
+    // apiHelperAuthFalse.authLogout();
+    return (apiHelperAuthTrue.email =="")?AuthLoginPage():HomePageDay2();
   }
 }

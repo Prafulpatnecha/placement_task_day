@@ -138,7 +138,7 @@ class ToastWrapperState extends State<ToastWrapper> {
               return AnimatedPositioned(
                 key: _toastKeys[index],
                 curve: isExpended ? Curves.easeOutBack : Curves.easeOut,
-                top: isExpended
+                bottom: isExpended
                     ? 50 + (_toastKeys.length - index) * 65
                     : getGap(index),
                 // Décalage pour chaque toast

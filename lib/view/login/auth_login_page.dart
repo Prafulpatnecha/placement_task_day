@@ -7,7 +7,7 @@ import '../../file_pub/toast/styles.dart';
 import '../../file_pub/toast/type.dart';
 import '../../services/api_helper_auth.dart';
 
-// late ToastProvider toastProvider;
+late ToastProvider toastProvider;
 TextEditingController textEmail = TextEditingController();
 TextEditingController textPassword = TextEditingController();
 
@@ -16,13 +16,16 @@ class AuthLoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // toastProvider = ToastProvider.of(context);
+    toastProvider = ToastProvider.of(context);
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             Spacer(),
+            Text("Login",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30),),
+            SizedBox(height: 50,),
+            // Spacer(),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextFormField(
@@ -71,17 +74,18 @@ class AuthLoginPage extends StatelessWidget {
                   );
                   if (authValue == "Login Successfully") {
                     toastMassageSuccess = authValue;
-                    // toastProvider.showToast(NotificationType.success);
+                    toastProvider.showToast(NotificationType.success);
                   } else {
                     toastMassageError = authValue;
-                    // toastProvider.showToast(NotificationType.error);
+                    toastProvider.showToast(NotificationType.error);
                   }
                 } else {
                   toastMassageError = "Email And Password Must be Required";
-                  // toastProvider.showToast(NotificationType.error);
+                  toastProvider.showToast(NotificationType.error);
                 }
               },
             ),
+            Spacer(),
             Spacer(),
           ],
         ),

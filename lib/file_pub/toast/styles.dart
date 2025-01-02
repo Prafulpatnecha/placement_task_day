@@ -67,7 +67,7 @@ enum ToastStyle {
 extension ToastStyleExtention on ToastStyle {
   BoxDecoration decoration(ToastColors toastColors) {
     switch (this) {
-      case ToastStyle.style3:
+      case ToastStyle.style1:
         return BoxDecoration(
           color: Colors.white,
           boxShadow: [
@@ -95,7 +95,7 @@ extension ToastStyleExtention on ToastStyle {
           borderRadius: BorderRadius.circular(20),
           //border: Border.all()
         );
-      case ToastStyle.style1:
+      case ToastStyle.style3:
         return BoxDecoration(
           color: toastColors.secondary,
           boxShadow: [

@@ -1,35 +1,30 @@
+
+
 class ModelAuth {
-  late String accessToken,
-      refreshToken,
-      username,
-      firstName,
-      email,
-      lastName,
-      gender,
-      image;
+  late String email,password,name,role,avatar,creationAt,updatedAt;
   late int id;
 
   ModelAuth(
-      {required this.accessToken,
-      required this.refreshToken,
-      required this.username,
-      required this.firstName,
-      required this.email,
-      required this.lastName,
-      required this.gender,
-      required this.image,
+      {required this.email,
+      required this.password,
+      required this.name,
+      required this.role,
+      required this.avatar,
+      required this.creationAt,
+      required this.updatedAt,
       required this.id});
 
-  factory ModelAuth.fromJson(Map m1) {
-    return ModelAuth(
-        accessToken: m1['accessToken'],
-        refreshToken: m1['refreshToken'],
-        username: m1['username'],
-        firstName: m1['firstName'],
-        email: m1['email'],
-        lastName: m1['lastName'],
-        gender: m1['gender'],
-        image: m1['image'],
-        id: m1['id']);
+  factory ModelAuth.formJson(Map m1)
+  {
+    return ModelAuth(email: m1['email'],
+        password: m1['password'],
+        name: m1['name'],
+        role: m1['role'],
+        avatar: m1['avatar'],
+        creationAt: m1['creationAt'],
+        updatedAt: m1['updatedAt'],
+        id: m1['id'],
+    );
   }
 }
+

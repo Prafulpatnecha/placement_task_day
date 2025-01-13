@@ -1,200 +1,115 @@
-//Placement Task Day - 2
-// Users API: https://dummyjson.com/users
-// Auth API: https://dummyjson.com/auth/login
-//
-// - Create a Login System App
-// - Allow only Users API's user to log in and authenticate users using Auth API.
-// - Auth API supports POST type and takes references from this doc: https://dummyjson.com/docs/auth
-// - After successfully logging in, navigate the user to the homepage where he should show their basic detail in Listview and after clicking open another detail page.
-// - Set a logout button which navigates the user to the login page again.
-// - Also store all user details(all) that are logged in successfully in permanent storage without using SQLite & Firebase.
-// - Create attractive UI & Proper directory structure
-
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart';
+import 'package:placement_task_day/model/model_auth.dart';
+import 'package:sqflite/sqflite.dart';
 
-import '../model/model_auth.dart';
+class ApiHelperAuth {
+  ApiHelperAuth._();
 
-class ApiHelperAuth extends ChangeNotifier {
-  String email = "";
-  String password = "";
-  final String _url = "https://dummyjson.com/auth/login";
-  ModelAuth? modelAuth;
+  static ApiHelperAuth apiHelperAuth = ApiHelperAuth._();
+  final String _apiUrl = "https://api.escuelajs.co/api/v1/users";
 
-  ApiHelperAuth();
-  ApiHelperAuth.oneTimeCalling()
-  {
-    postShareLocalStorageEmail();
-  }
-
-
-  Future<String> authGetLogin({required String username, password}) async {
-    Response response = await http.post(
-      Uri.parse(
-        _url,
-      ),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "username": username,
-        "password": password,
-      }),
-    );
+  Future getData() async {
+    Response response = await http.get(Uri.parse(_apiUrl));
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-      Map m1 = json;
-      print("++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
-      print("++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
-      print(m1["message"]??m1["username"]);
-      print("++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
-      if ((m1["message"] ?? m1["username"]) == username) {
-        // username,password share local Storage
-      print(m1);
-        modelAuth = ModelAuth.fromJson(m1);
-        getShareLocalStorageEmail(email: username,password: password);
-        print(modelAuth!.id);
-        notifyListeners();
-        return "Login Successfully";
-      } else if ((m1["message"] ?? m1["username"]) == "Username and password required") {
-        //   error Massage Show
-        return "Username and password required";
-      } else if("Invalid credentials" == (m1["message"] ?? m1["username"])) {
-        //   error Massage Show
-        return "Password Invalid";
-      }else{
-        return "Check Your Internet";
-      }
+      Map map1 = json[0];
+      // print(map1);
+      return json;
     } else {
-      final json = jsonDecode(response.body);
-      Map m1 = json;
-      print("+++++++++++++++++++++++++++++++++++2+++++++++++++++++++++++++++++");
-      print(m1);
-      print("++++++++++++++++++++++++++++++++++2++++++++++++++++++++++++++++++");
-      print(m1["message"]);
-      print("++++++++++++++++++++++++++++++++++++2++++++++++++++++++++++++++++");
-      if ((m1["message"]??m1["username"]) == "Invalid credentials") {
-        //   error Massage Show
-        return "Password Invalid";
-      } else if ((m1["message"] ?? m1["username"]) == "Username and password required") {
-        //   error Massage Show
-        return "Username and password required";
-      } else if("Invalid credentials" == (m1["message"] ?? m1["username"])) {
-        //   error Massage Show
-        return "Password Invalid";
-      }else{
-        return "Check Your Internet";
-      }
-      //   Show error massage.
+      return "200 Status field";
     }
   }
+}
 
-  Future<void> getShareLocalStorageEmail(
-      {required String email, password}) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    this.email = email;
-    this.password = password;
-    await prefs.setString('email', "${email}_$password");
-    print(this.email);
-    notifyListeners();
+class LocalDataStore extends ChangeNotifier {
+  Map dataStore = {};
+  Database? database;
+  List<ModelAuth> jsonModelList = [];
+
+  LocalDataStore() {
+    createLocalStore();
   }
 
-  Future<Object?> postShareLocalStorageEmail() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String value = prefs.getString('email') ?? "";
-    if(value.isNotEmpty) {
-      email = value.split("_").sublist(0, 1).join("");
-      password = value.split("_").sublist(1, 2).join("");
-      print(
-          "******************************************************************");
-      print(email);
-      print(password);
-      print(
-          "******************************************************************");
-      // notifyListeners();
-      Response response = await http.post(
-        Uri.parse(
-          _url,
-        ),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode({
-          "username": email,
-          "password": password,
-        }),
-      );
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        Map m1 = json;
-        print(
-            "++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
-        print(
-            "++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
-        print(m1["message"] ?? m1["username"]);
-        print(
-            "++++++++++++++++++++++++++++++++1++++++++++++++++++++++++++++++++");
-        if ((m1["message"] ?? m1["username"]) == email) {
-          // username,password share local Storage
-          print(m1);
-          modelAuth = ModelAuth.fromJson(m1);
-          // getShareLocalStorageEmail(email: email,password: password);
-          print(modelAuth!.id);
-          // notifyListeners();
-          return modelAuth;
-        } else if ((m1["message"] ?? m1["username"]) ==
-            "Username and password required") {
-          //   error Massage Show
-          return "Username and password required";
-        } else if ("Invalid credentials" == (m1["message"] ?? m1["username"])) {
-          //   error Massage Show
-          return "Password Invalid";
-        } else {
-          return "Check Your Internet";
-        }
-      } else {
-        final json = jsonDecode(response.body);
-        Map m1 = json;
-        print(
-            "+++++++++++++++++++++++++++++++++++2+++++++++++++++++++++++++++++");
-        print(m1);
-        print(
-            "++++++++++++++++++++++++++++++++++2++++++++++++++++++++++++++++++");
-        print(m1["message"]);
-        print(
-            "++++++++++++++++++++++++++++++++++++2++++++++++++++++++++++++++++");
-        if ((m1["message"] ?? m1["username"]) == "Invalid credentials") {
-          //   error Massage Show
-          return "Password Invalid";
-        } else if ((m1["message"] ?? m1["username"]) ==
-            "Username and password required") {
-          //   error Massage Show
-          return "Username and password required";
-        } else if ("Invalid credentials" == (m1["message"] ?? m1["username"])) {
-          //   error Massage Show
-          return "Password Invalid";
-        } else {
-          return "Check Your Internet";
-        }
-      }
+  Future<void> createLocalStore() async {
+    var databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, 'contact.db');
+    // await deleteDatabase(path);
+    // await deleteDatabase(path);
+    database = await openDatabase(path, version: 1,
+        onCreate: (Database db, int version) async {
+      // When creating the db, create the table
+        await db.execute('''CREATE TABLE Test (id INTEGER PRIMARY KEY,
+              email TEXT, password TEXT,name TEXT,
+               role TEXT,avatar TEXT ,creationAt TEXT,
+               updatedAt TEXT,idSet INTEGER)''');
+    });
+    getLocalData();
+  }
+
+  Future<void> insertLocalStorage({required List jsonList}) async {
+    createLocalStore();
+    List<ModelAuth> jsonListStore = [];
+    jsonListStore = (jsonList)
+        .map(
+          (e) => ModelAuth.formJson(e),
+        )
+        .toList();
+    // print(jsonListStore);
+    await database!.rawDelete('DELETE FROM Test WHERE idSet = ?', [1]);
+    for (int i = 0; i < jsonListStore.length; i++) {
+      database!.transaction((txn) async {
+        txn.rawInsert(
+            'INSERT INTO Test(id,email,password,name,role,avatar,creationAt,updatedAt,idSet) VALUES(?, ?, ?,?,?,?,?,?,?)',
+            [
+              jsonListStore[i].id,
+              jsonListStore[i].email,
+              jsonListStore[i].password,
+              jsonListStore[i].name,
+              jsonListStore[i].role,
+              jsonListStore[i].avatar,
+              jsonListStore[i].creationAt,
+              jsonListStore[i].updatedAt,
+              1
+            ]);
+      });
     }
-      return "Not ANy";
+    getLocalData();
   }
 
-  Future<void> authLogout() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('email');
-    email = "";
-    password = "";
+  Future<void> getLocalData()
+  async {
+    List list = await database!.rawQuery('SELECT * FROM Test');
+    // print("-----------------------------");
+    jsonModelList = (list).map((e) => ModelAuth.formJson(e),).toList();
+    // for (int i = 0; i < jsonModelList.length; i++)
+    // {
+    //   print(jsonModelList[i].id);
+    // }
+    // print("-----------------------------");
     notifyListeners();
   }
-  void updateChange()
-  {
-    notifyListeners();
+
+  Future<void> storageIdDelete({required int id})
+  async {
+    await database!.rawDelete('DELETE FROM Test WHERE id = ?', [id]);
+    getLocalData();
   }
-  void jsonFetch() {}
+
+  void getUpdateData({required int id,
+      required String name,
+      required String role})
+   {
+    // database!.rawUpdate(
+    //     'UPDATE Test SET name = ?,role = ?, WHERE id = ?',
+    //     [name,role,id]);
+    database!.rawUpdate(
+        '''UPDATE Test SET name = ?, role = ? WHERE id = ?''',
+        [name, role, id]);
+    getLocalData();
+  }
 }

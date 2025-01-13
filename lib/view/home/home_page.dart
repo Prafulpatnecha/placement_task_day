@@ -22,13 +22,28 @@ class HomePage extends StatelessWidget {
     toastProvider = ToastProvider.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Contact"),
+        title: Text(
+          "Contact",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: ListView.builder(
         itemCount: localDataStore.jsonModelList.length,
         itemBuilder: (context, index) => ListTile(
-          leading: Text(localDataStore.jsonModelList[index].id.toString()),
+          leading: Container(
+              height: 50,
+              width: 50,
+              // alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: NetworkImage(
+                          localDataStore.jsonModelList[index].avatar),
+                      fit: BoxFit.cover)),
+              child: Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: Text(localDataStore.jsonModelList[index].id.toString(),style: TextStyle(backgroundColor: Colors.white),),
+              )),
           title: Text(
               "${localDataStore.jsonModelList[index].name} / ${localDataStore.jsonModelList[index].role}"),
           subtitle: Text(localDataStore.jsonModelList[index].email),
@@ -42,15 +57,18 @@ class HomePage extends StatelessWidget {
                     // localDataStoreFalse.storageIdDelete(id: localDataStore.jsonModelList[index].id);
                   },
                   icon: Icon(Icons.delete)),
-              IconButton(onPressed: () {
-                showDialog(context: context, builder: (context) => AlertDialog(
-                  title: Text("data"),
-                    content: Column(
-                      spacing: 10,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                    TextFormField(
-                      controller: textName,
+              IconButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text("data"),
+                        content: Column(
+                          spacing: 10,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextFormField(
+                              controller: textName,
                               decoration: InputDecoration(
                                 label: Text("Name"),
                                 border: OutlineInputBorder(),
@@ -58,8 +76,8 @@ class HomePage extends StatelessWidget {
                                 focusedBorder: OutlineInputBorder(),
                               ),
                             ),
-                    TextFormField(
-                      controller: textRole,
+                            TextFormField(
+                              controller: textRole,
                               decoration: InputDecoration(
                                 label: Text("Role"),
                                 border: OutlineInputBorder(),
@@ -68,40 +86,50 @@ class HomePage extends StatelessWidget {
                               ),
                             ),
                           ],
-                    ),
-                  actions: [
-                    TextButton(onPressed: () {
-                      localDataStoreFalse.getUpdateData(id: localDataStore.jsonModelList[index].id, name: textName.text.toString(), role: textRole.text.toString());
-                      Navigator.of(context).pop();
-                    }, child: Text("Save")),
-                    TextButton(onPressed: () {
-                      Navigator.of(context).pop();
-                    }, child: Text("Cansel"))
-                  ],
-                ),);
-                // showDialog(context: context, builder: (context) => Column(
-                //   mainAxisSize: MainAxisSize.min,
-                //   children: [
-                //     Text("data"),
-                //     TextFormField(),
-                //   ],
-                // ),);
-              }, icon: Icon(Icons.edit))
+                        ),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                localDataStoreFalse.getUpdateData(
+                                    id: localDataStore.jsonModelList[index].id,
+                                    name: textName.text.toString(),
+                                    role: textRole.text.toString());
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Save")),
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Cansel"))
+                        ],
+                      ),
+                    );
+                    // showDialog(context: context, builder: (context) => Column(
+                    //   mainAxisSize: MainAxisSize.min,
+                    //   children: [
+                    //     Text("data"),
+                    //     TextFormField(),
+                    //   ],
+                    // ),);
+                  },
+                  icon: Icon(Icons.edit))
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-          if(connectivityResult.contains(ConnectivityResult.mobile) || connectivityResult.contains(ConnectivityResult.wifi))
-            {
-              List jsonList = await ApiHelperAuth.apiHelperAuth.getData();
-              // print(jsonList);
-              localDataStoreFalse.insertLocalStorage(jsonList: jsonList);
-              toastMassageInfo = "Fetching Data Successfully";
-              toastProvider.showToast(NotificationType.info);
-            }else{
+          final List<ConnectivityResult> connectivityResult =
+              await (Connectivity().checkConnectivity());
+          if (connectivityResult.contains(ConnectivityResult.mobile) ||
+              connectivityResult.contains(ConnectivityResult.wifi)) {
+            List jsonList = await ApiHelperAuth.apiHelperAuth.getData();
+            // print(jsonList);
+            localDataStoreFalse.insertLocalStorage(jsonList: jsonList);
+            toastMassageInfo = "Fetching Data Successfully";
+            toastProvider.showToast(NotificationType.info);
+          } else {
             toastMassageError = "Please Connect Internet";
             toastProvider.showToast(NotificationType.error);
           }
